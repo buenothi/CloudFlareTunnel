@@ -1,0 +1,22 @@
+services:
+  cloudflared:
+    # Fixe a versão em CLOUDFLARED_TAG no .env (docker exec cloudflared cloudflared --version)
+    image: cloudflare/cloudflared:${CLOUDFLARED_TAG:-latest}
+    container_name: cloudflared
+    # /metrics e /ready só na rede Docker (para a observabilidade)
+    command: tunnel --no-autoupdate --metrics 0.0.0.0:2000 run
+    environment:
+      - TUNNEL_TOKEN=${CF_TUNNEL_TOKEN}
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    networks:
+      - private-bridge
+
+networks:
+  private-bridge:
+    external: true
+    name: docker-n8n_private-bridge
